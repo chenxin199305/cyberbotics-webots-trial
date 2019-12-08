@@ -1,0 +1,116 @@
+#VRML_SIM R2019b utf8
+WorldInfo {
+  basicTimeStep 1
+}
+Viewpoint {
+  orientation -0.300886705765812 0.8860019313767827 0.352799897803285 1.5782829646215937
+  position 0.793456098151995 0.5234914674708914 0.14802138568559997
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+}
+Solid {
+  translation -0.0621089 0.16 -0.0255067
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColorMap ImageTexture {
+          url [
+            "usr/local/webots/projects/default/worlds/textures/red_brick_wall.jpg"
+          ]
+        }
+        roughness 1
+        metalness 0
+      }
+      geometry Sphere {
+        radius 0.1
+      }
+    }
+  ]
+  boundingObject DEF BALL_GEOMETRY Sphere {
+    radius 0.1
+  }
+  physics Physics {
+    mass 1
+  }
+}
+Solid {
+  translation -0.0694194 0.16 0.210615
+  children [
+    Shape {
+      appearance PBRAppearance {
+        roughness 1
+        metalness 0
+      }
+      geometry Sphere {
+        radius 0.05
+        subdivision 4
+      }
+    }
+  ]
+  name "solid(1)"
+  boundingObject Sphere {
+    radius 0.05
+    subdivision 4
+  }
+  physics Physics {
+    mass 1
+  }
+}
+Solid {
+  translation 0.292728 0.16 0.115441
+  rotation 1 0 0 1.5708
+  children [
+    DEF GOGOGO Group {
+      children [
+        Shape {
+          appearance PBRAppearance {
+          }
+          geometry Cylinder {
+            height 0.09
+            radius 0.02
+          }
+        }
+        Transform {
+          translation 0 -0.06 0
+          children [
+            Shape {
+              appearance PBRAppearance {
+              }
+              geometry Sphere {
+                radius 0.04
+                subdivision 4
+              }
+            }
+          ]
+        }
+        Transform {
+          translation 0 0.06 0
+          children [
+            Shape {
+              appearance PBRAppearance {
+              }
+              geometry Sphere {
+                radius 0.04
+                subdivision 4
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+  name "solid(2)"
+  contactMaterial "dumbbell"
+  boundingObject USE GOGOGO
+  physics Physics {
+    density -1
+    mass 2
+    centerOfMass [
+      0 0 0.02
+    ]
+  }
+}

@@ -1,0 +1,117 @@
+PROTO SixthWorldRobot [
+
+]
+{
+Robot {
+  translation 0 0.05 0
+  children [
+    DistanceSensor {
+      translation -0.03 4.6928e-08 0.05
+      rotation 1 0 0 4.6928e-06
+      children [
+        DEF SENSOR Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 1
+            }
+          }
+          geometry Box {
+            size 0.01 0.01 0.01
+          }
+        }
+      ]
+      name "distance_sensor_right"
+    }
+    DistanceSensor {
+      translation 0.03 4.6928e-08 0.05
+      rotation 1 0 0 4.6928e-06
+      children [
+        DEF SENSOR Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 1
+            }
+          }
+          geometry Box {
+            size 0.01 0.01 0.01
+          }
+        }
+      ]
+      name "distance_sensor_left"
+    }
+    HingeJoint {
+      jointParameters HingeJointParameters {
+      }
+      device [
+        RotationalMotor {
+          name "rotational_motor_left"
+        }
+      ]
+      endPoint Solid {
+        translation 0.1 1.01962e-07 0
+        rotation 0 0 -0.9999999999999999 1.5707953071795862
+        children [
+          DEF WHEEL Shape {
+            appearance Appearance {
+              material Material {
+                diffuseColor 0 1 0
+              }
+            }
+            geometry Cylinder {
+              height 0.1
+              radius 0.05
+            }
+          }
+        ]
+        name "solid_wheel_left"
+        boundingObject USE WHEEL
+        physics Physics {
+        }
+      }
+    }
+    HingeJoint {
+      jointParameters HingeJointParameters {
+      }
+      device [
+        RotationalMotor {
+          name "rotational_motor_right"
+        }
+      ]
+      endPoint Solid {
+        translation -0.1 -1.01962e-07 0
+        rotation 0 0 -0.9999999999999999 1.5707953071795862
+        children [
+          DEF WHEEL Shape {
+            appearance Appearance {
+              material Material {
+                diffuseColor 0 1 0
+              }
+            }
+            geometry Cylinder {
+              height 0.1
+              radius 0.05
+            }
+          }
+        ]
+        name "solid_wheel_right"
+        boundingObject USE WHEEL
+        physics Physics {
+        }
+      }
+    }
+    DEF BODY Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 0 0
+        }
+      }
+      geometry Box {
+        size 0.1 0.05 0.1
+      }
+    }
+  ]
+  boundingObject USE BODY
+  physics Physics {
+  }
+}
+}

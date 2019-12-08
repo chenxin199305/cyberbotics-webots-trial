@@ -1,0 +1,61 @@
+#VRML_SIM R2019b utf8
+WorldInfo {
+  basicTimeStep 1
+}
+Viewpoint {
+  orientation -0.737970921959683 0.6027611552160294 0.3034434182918014 0.7861377940935866
+  position 1.040250967117347 1.4755442964592163 1.7535333269028248
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+}
+Solid {
+  translation 0.190549 0.29 -0.155418
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColorMap ImageTexture {
+          url [
+            "usr/local/webots/projects/default/worlds/textures/red_brick_wall.jpg"
+          ]
+        }
+        roughness 1
+        metalness 0
+      }
+      geometry Sphere {
+        radius 0.1
+      }
+    }
+  ]
+  boundingObject DEF BALL_GEOMETRY Sphere {
+    radius 0.1
+  }
+  physics Physics {
+    mass 1
+  }
+}
+Solid {
+  translation -0.147267 0.29 0.236112
+  children [
+    Shape {
+      appearance PBRAppearance {
+        roughness 1
+        metalness 0
+      }
+      geometry Sphere {
+        radius 0.05
+        subdivision 4
+      }
+    }
+  ]
+  name "solid(1)"
+  boundingObject Sphere {
+    radius 0.1
+  }
+  physics Physics {
+    mass 1
+  }
+}
