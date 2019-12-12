@@ -2,20 +2,29 @@
 WorldInfo {
   basicTimeStep 1
   optimalThreadCount 8
+  contactProperties [
+    ContactProperties {
+      coulombFriction [
+        -1
+      ]
+      bounce 0
+    }
+  ]
 }
 Viewpoint {
-  orientation 0.7570763859451647 0.6383293560349921 0.13917966470774526 5.718948065796291
-  position -1.1810626424175958 2.3844996838542145 3.4359573685313456
+  orientation -0.503857459019188 0.8510721391623505 0.14766135219598894 0.6600009456935331
+  position 4.2824887452900215 2.057505720195304 3.447192228843183
 }
 TexturedBackground {
 }
 TexturedBackgroundLight {
 }
 RectangleArena {
-  floorSize 10 10
+  floorSize 100 100
+  wallHeight 1
 }
-DEF ExoMotus-H4-Thigh Robot {
-  translation -1.9200000000000004 0.6411763362473804 0.00010383315234763969
+DEF ExoMotus-H4-2Joint Robot {
+  translation -2.94 0.641176 0.000103833
   rotation 1 -5.070734189999867e-13 -1.8945719871201646e-12 0.00015983118102127556
   children [
     DEF RightLegHipJoint HingeJoint {
@@ -106,8 +115,8 @@ DEF ExoMotus-H4-Thigh Robot {
   }
   controller ""
 }
-DEF ExoMotus-H4 Robot {
-  translation -8.993621474297358e-17 1.2016290679320119 -0.0031497555394448475
+DEF ExoMotus-H4-4Joint Robot {
+  translation -1.55 1.20163 -0.00314976
   rotation -1 1.023944272263815e-11 2.6671354541051674e-12 1.3973916998144752e-05
   children [
     DEF RightLegHipJoint HingeJoint {
@@ -127,7 +136,7 @@ DEF ExoMotus-H4 Robot {
         }
       ]
       endPoint DEF RightLegThigh Solid {
-        translation 0.19999999999999718 -0.3999999364039699 -0.0001594942236255587
+        translation 0.19999999999999252 -0.3999999364039676 -0.00015949422362555643
         rotation 1 0 0 1.144579909424292e-06
         children [
           DEF RightLegKneeJoint HingeJoint {
@@ -142,7 +151,7 @@ DEF ExoMotus-H4 Robot {
               }
             ]
             endPoint DEF RightLegShank Solid {
-              translation 0 -0.49999999973092313 -1.1599043559973484e-05
+              translation 0 -0.4999999997309208 -1.1599043559973347e-05
               rotation 1 0 0 4.639617662365417e-05
               children [
                 DEF RightLegAnkleJoint HingeJoint {
@@ -232,7 +241,7 @@ DEF ExoMotus-H4 Robot {
         }
       ]
       endPoint DEF LeftLegThigh Solid {
-        translation -0.19999999999999718 -0.3999999364039699 -0.00015949422362554762
+        translation -0.19999999999999252 -0.3999999364039676 -0.00015949422362554534
         rotation 1 0 0 1.144579909424292e-06
         children [
           DEF LeftLegKneeJoint HingeJoint {
@@ -247,7 +256,7 @@ DEF ExoMotus-H4 Robot {
               }
             ]
             endPoint DEF LeftLegShank Solid {
-              translation 0 -0.49999999973092313 -1.1599043559946312e-05
+              translation 0 -0.4999999997309208 -1.1599043559946174e-05
               rotation 1 0 0 4.639617662365417e-05
               children [
                 DEF LeftLegAnkleJoint HingeJoint {
@@ -333,10 +342,560 @@ DEF ExoMotus-H4 Robot {
   boundingObject USE BodyShape
   physics Physics {
   }
-  controller "matlab"
+  controller ""
+}
+DEF ExoMotus-H4-6Joint Robot {
+  translation -0.12 1.20163 0.0968502
+  rotation -1 1.023944272263815e-11 2.6671354541051674e-12 1.3973916998144752e-05
+  children [
+    DEF RightLegHipJoint HingeJoint {
+      jointParameters HingeJointParameters {
+        anchor 0 -0.2 0
+        minStop -2
+        maxStop 2
+      }
+      device [
+        DEF RightLegHipMotor RotationalMotor {
+          name "right_leg_hip_motor"
+          maxVelocity 100
+          minPosition -1
+          maxPosition 1
+          maxTorque 1000
+        }
+      ]
+      endPoint DEF RightLegThigh Solid {
+        translation 0.19999999999999546 -0.3999999365863645 -0.00015926534214669164
+        rotation 1 0 0 0
+        children [
+          DEF RightLegKneeJoint HingeJoint {
+            jointParameters HingeJointParameters {
+              axis -1 0 0
+              anchor 0 -0.25 0
+              minStop -2
+              maxStop 2
+            }
+            device [
+              DEF RightLegKneeMotor RotationalMotor {
+                name "right_leg_knee_motor"
+                maxVelocity 100
+                maxPosition 1.57
+                maxTorque 1000
+              }
+            ]
+            endPoint DEF RightLegShank Solid {
+              translation 0 -0.4999999999999979 2.7755575615628914e-17
+              rotation -1 0 0 0
+              children [
+                DEF RightLegAnkleJoint HingeJoint {
+                  jointParameters HingeJointParameters {
+                    position 4.364415413903924e-07
+                    anchor 0 -0.28 0
+                    minStop -0.1
+                    maxStop 0.1
+                  }
+                  device [
+                    DEF RightLegAnkleMotor RotationalMotor {
+                      name "right_leg_ankle_motor"
+                      maxVelocity 100
+                      minPosition -2
+                      maxPosition 2
+                      maxTorque 1000
+                    }
+                  ]
+                  endPoint DEF RightLegFoot Solid {
+                    translation 0 -0.28 0
+                    rotation 0.9999999999999999 0 0 4.3597039098524516e-07
+                    children [
+                      DEF RightLegFootShape Shape {
+                        appearance Appearance {
+                          material Material {
+                            diffuseColor 1 0 1
+                          }
+                        }
+                        geometry Box {
+                          size 0.1 0.05 0.2
+                        }
+                      }
+                    ]
+                    boundingObject USE RightLegFootShape
+                    physics Physics {
+                    }
+                  }
+                }
+                DEF RightLegShankShape Shape {
+                  appearance Appearance {
+                    material Material {
+                      diffuseColor 0 0 1
+                    }
+                  }
+                  geometry Capsule {
+                    height 0.4
+                    radius 0.05
+                  }
+                }
+              ]
+              boundingObject USE RightLegShankShape
+              physics Physics {
+              }
+            }
+          }
+          DEF RightLegThighShape Shape {
+            appearance Appearance {
+              material Material {
+                diffuseColor 0 0.5 0.5
+              }
+            }
+            geometry Capsule {
+              height 0.4
+              radius 0.05
+            }
+          }
+        ]
+        name "solid(1)"
+        boundingObject USE RightLegThighShape
+        physics Physics {
+        }
+      }
+    }
+    DEF LeftLegHipJoint HingeJoint {
+      jointParameters HingeJointParameters {
+        anchor 0 -0.2 0
+        minStop -2
+        maxStop 2
+      }
+      device [
+        DEF LeftLegHipMotor RotationalMotor {
+          name "left_leg_hip_motor"
+          maxVelocity 100
+          minPosition -1
+          maxPosition 1
+          maxTorque 1000
+        }
+      ]
+      endPoint DEF LeftLegThigh Solid {
+        translation -0.19999999999999546 -0.3999999365863645 -0.00015926534214669164
+        rotation 1 0 0 0
+        children [
+          DEF LeftLegKneeJoint HingeJoint {
+            jointParameters HingeJointParameters {
+              axis -1 0 0
+              anchor 0 -0.25 0
+              minStop -2
+              maxStop 2
+            }
+            device [
+              DEF LeftLegKneeMotor RotationalMotor {
+                name "left_leg_knee_motor"
+                maxVelocity 100
+                maxPosition 1.57
+                maxTorque 1000
+              }
+            ]
+            endPoint DEF LeftLegShank Solid {
+              translation 0 -0.4999999999999979 2.7755575615628914e-17
+              rotation -1 0 0 0
+              children [
+                DEF LeftLegAnkleJoint HingeJoint {
+                  jointParameters HingeJointParameters {
+                    anchor 0 -0.28 0
+                    minStop -2
+                    maxStop 2
+                  }
+                  device [
+                    DEF LeftLegAnkleMotor RotationalMotor {
+                      name "left_leg_ankle_motor"
+                      maxVelocity 100
+                      minPosition -0.5
+                      maxPosition 0.5
+                      maxTorque 1000
+                    }
+                  ]
+                  endPoint DEF LeftLegFoot Solid {
+                    translation 0 -0.28 0
+                    rotation 1 0 0 0
+                    children [
+                      DEF LeftLegFootShape Shape {
+                        appearance Appearance {
+                          material Material {
+                            diffuseColor 1 0 1
+                          }
+                        }
+                        geometry Box {
+                          size 0.1 0.05 0.2
+                        }
+                      }
+                    ]
+                    boundingObject USE LeftLegFootShape
+                    physics Physics {
+                    }
+                  }
+                }
+                DEF LeftLegShankShape Shape {
+                  appearance Appearance {
+                    material Material {
+                      diffuseColor 0 0 1
+                    }
+                  }
+                  geometry Capsule {
+                    height 0.4
+                    radius 0.05
+                  }
+                }
+              ]
+              boundingObject USE LeftLegShankShape
+              physics Physics {
+              }
+            }
+          }
+          DEF LeftLegThighShape Shape {
+            appearance Appearance {
+              material Material {
+                diffuseColor 0.5 0.5 0
+              }
+            }
+            geometry Capsule {
+              height 0.4
+              radius 0.05
+            }
+          }
+        ]
+        boundingObject USE LeftLegThighShape
+        physics Physics {
+        }
+      }
+    }
+    DEF BodyShape Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 0 0
+        }
+      }
+      geometry Box {
+        size 0.3 0.5 0.1
+      }
+    }
+  ]
+  name "robot(3)"
+  boundingObject USE BodyShape
+  physics Physics {
+  }
+  controller ""
   supervisor TRUE
 }
-DEF ExoMotus-H4-Body Robot {
+DEF ExoMotus-H4-6Joint-WithFrame Robot {
+  translation 1.23 1.20163 0.19685
+  rotation -1 1.023944272263815e-11 2.6671354541051674e-12 1.3973916998144752e-05
+  children [
+    DEF SupportFrame1 Solid {
+      translation -0.68 -1.05 0.74
+      children [
+        DEF SupportFrame1Shape Shape {
+          appearance Appearance {
+            material Material {
+            }
+          }
+          geometry Box {
+            size 0.1 0.1 0.1
+          }
+        }
+      ]
+      name "solid(2)"
+      boundingObject USE SupportFrame1Shape
+      physics Physics {
+        density 10000
+      }
+    }
+    DEF SupportFrame2 Solid {
+      translation 0.71 -1.05 0.74
+      children [
+        DEF SupportFrame2Shape Shape {
+          appearance Appearance {
+            material Material {
+            }
+          }
+          geometry Box {
+            size 0.1 0.1 0.1
+          }
+        }
+      ]
+      name "solid(3)"
+      boundingObject USE SupportFrame2Shape
+      physics Physics {
+        density 10000
+      }
+    }
+    DEF SupportFrame3 Solid {
+      translation 0.72 -1.05 -0.88
+      children [
+        DEF SupportFrame3Shape Shape {
+          appearance Appearance {
+            material Material {
+            }
+          }
+          geometry Box {
+            size 0.1 0.1 0.1
+          }
+        }
+      ]
+      name "solid(4)"
+      boundingObject USE SupportFrame3Shape
+      physics Physics {
+        density 10000
+      }
+    }
+    DEF SupportFrame4 Solid {
+      translation -0.67 -1.04 -0.88
+      children [
+        DEF SupportFrame4Shape Shape {
+          appearance Appearance {
+            material Material {
+            }
+          }
+          geometry Box {
+            size 0.1 0.1 0.1
+          }
+        }
+      ]
+      name "solid(5)"
+      boundingObject USE SupportFrame4Shape
+      physics Physics {
+        density 10000
+      }
+    }
+    DEF RightLegHipJoint HingeJoint {
+      jointParameters HingeJointParameters {
+        anchor 0 -0.2 0
+        minStop -2
+        maxStop 2
+      }
+      device [
+        DEF RightLegHipMotor RotationalMotor {
+          name "right_leg_hip_motor"
+          maxVelocity 100
+          minPosition -1
+          maxPosition 1
+          maxTorque 1000
+        }
+      ]
+      endPoint DEF RightLegThigh Solid {
+        translation 0.19999999999999546 -0.3999999365863645 -0.00015926534214669164
+        rotation 1 0 0 0
+        children [
+          DEF RightLegKneeJoint HingeJoint {
+            jointParameters HingeJointParameters {
+              axis -1 0 0
+              anchor 0 -0.25 0
+              minStop -2
+              maxStop 2
+            }
+            device [
+              DEF RightLegKneeMotor RotationalMotor {
+                name "right_leg_knee_motor"
+                maxVelocity 100
+                maxPosition 1.57
+                maxTorque 1000
+              }
+            ]
+            endPoint DEF RightLegShank Solid {
+              translation 0 -0.4999999999999979 2.7755575615628914e-17
+              rotation -1 0 0 0
+              children [
+                DEF RightLegAnkleJoint HingeJoint {
+                  jointParameters HingeJointParameters {
+                    anchor 0 -0.28 0
+                    minStop -0.1
+                    maxStop 0.1
+                  }
+                  device [
+                    DEF RightLegAnkleMotor RotationalMotor {
+                      name "right_leg_ankle_motor"
+                      maxVelocity 100
+                      minPosition -2
+                      maxPosition 2
+                      maxTorque 1000
+                    }
+                  ]
+                  endPoint DEF RightLegFoot Solid {
+                    translation 0 -0.2800000218220771 -0.04999999999999526
+                    rotation -1 0 0 4.3495057580847895e-07
+                    children [
+                      DEF RightLegFootShape Shape {
+                        appearance Appearance {
+                          material Material {
+                            diffuseColor 1 0 1
+                          }
+                        }
+                        geometry Box {
+                          size 0.1 0.05 0.2
+                        }
+                      }
+                    ]
+                    boundingObject USE RightLegFootShape
+                    physics Physics {
+                    }
+                  }
+                }
+                DEF RightLegShankShape Shape {
+                  appearance Appearance {
+                    material Material {
+                      diffuseColor 0 0 1
+                    }
+                  }
+                  geometry Capsule {
+                    height 0.4
+                    radius 0.05
+                  }
+                }
+              ]
+              boundingObject USE RightLegShankShape
+              physics Physics {
+              }
+            }
+          }
+          DEF RightLegThighShape Shape {
+            appearance Appearance {
+              material Material {
+                diffuseColor 0 0.5 0.5
+              }
+            }
+            geometry Capsule {
+              height 0.4
+              radius 0.05
+            }
+          }
+        ]
+        name "solid(1)"
+        boundingObject USE RightLegThighShape
+        physics Physics {
+        }
+      }
+    }
+    DEF LeftLegHipJoint HingeJoint {
+      jointParameters HingeJointParameters {
+        anchor 0 -0.2 0
+        minStop -2
+        maxStop 2
+      }
+      device [
+        DEF LeftLegHipMotor RotationalMotor {
+          name "left_leg_hip_motor"
+          maxVelocity 100
+          minPosition -1
+          maxPosition 1
+          maxTorque 1000
+        }
+      ]
+      endPoint DEF LeftLegThigh Solid {
+        translation -0.19999999999999546 -0.3999999365863645 -0.00015926534214669164
+        rotation 1 0 0 0
+        children [
+          DEF LeftLegKneeJoint HingeJoint {
+            jointParameters HingeJointParameters {
+              axis -1 0 0
+              anchor 0 -0.25 0
+              minStop -2
+              maxStop 2
+            }
+            device [
+              DEF LeftLegKneeMotor RotationalMotor {
+                name "left_leg_knee_motor"
+                maxVelocity 100
+                maxPosition 1.57
+                maxTorque 1000
+              }
+            ]
+            endPoint DEF LeftLegShank Solid {
+              translation 0 -0.4999999999999979 2.7755575615628914e-17
+              rotation -1 0 0 0
+              children [
+                DEF LeftLegAnkleJoint HingeJoint {
+                  jointParameters HingeJointParameters {
+                    anchor 0 -0.28 0
+                    minStop -0.1
+                    maxStop 0.1
+                  }
+                  device [
+                    DEF LeftLegAnkleMotor RotationalMotor {
+                      name "left_leg_ankle_motor"
+                      maxVelocity 100
+                      minPosition -2
+                      maxPosition 2
+                      maxTorque 1000
+                    }
+                  ]
+                  endPoint DEF LeftLegFoot Solid {
+                    translation 0 -0.2800000218220771 -0.04999999999999526
+                    rotation -1 0 0 4.3495057580847895e-07
+                    children [
+                      DEF RightLegFootShape Shape {
+                        appearance Appearance {
+                          material Material {
+                            diffuseColor 1 0 1
+                          }
+                        }
+                        geometry Box {
+                          size 0.1 0.05 0.2
+                        }
+                      }
+                    ]
+                    boundingObject USE RightLegFootShape
+                    physics Physics {
+                    }
+                  }
+                }
+                DEF LeftLegShankShape Shape {
+                  appearance Appearance {
+                    material Material {
+                      diffuseColor 0 0 1
+                    }
+                  }
+                  geometry Capsule {
+                    height 0.4
+                    radius 0.05
+                  }
+                }
+              ]
+              boundingObject USE LeftLegShankShape
+              physics Physics {
+              }
+            }
+          }
+          DEF LeftLegThighShape Shape {
+            appearance Appearance {
+              material Material {
+                diffuseColor 0.5 0.5 0
+              }
+            }
+            geometry Capsule {
+              height 0.4
+              radius 0.05
+            }
+          }
+        ]
+        boundingObject USE LeftLegThighShape
+        physics Physics {
+        }
+      }
+    }
+    DEF BodyShape Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 0 0
+        }
+      }
+      geometry Box {
+        size 0.3 0.5 0.1
+      }
+    }
+  ]
+  name "robot(4)"
+  boundingObject USE BodyShape
+  physics Physics {
+  }
+  controller "matlab_exomotus_h4_6joint"
+  supervisor TRUE
+}
+DEF ExoMotus-H4-0Joint Robot {
   translation -4.07 0.22057000000003743 0.09999999999999885
   rotation 0.9936551507234236 0.00029240478631524785 0.11246935556075284 -4.992762037379595e-15
   children [

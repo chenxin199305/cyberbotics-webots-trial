@@ -1,0 +1,383 @@
+% MATLAB controller for Webots
+% File:          exomotus_h4_matlab_controller.m
+% Date:
+% Description:
+% Author:
+% Modifications:
+
+% uncomment the next two lines if you want to use
+% MATLAB's desktop to interact with the controller:
+desktop;
+keyboard;
+
+%% Trajectory Generation
+
+% set proportion
+cycle_time = 100;
+step_time = 100;
+shift_time = 10;
+
+% left leg hip
+hip_time = [0 50 90 100];
+hip_position = [20 -10 15 15];
+hip_velocity = [0 0 0 0 0 0];
+hip_param = [];
+
+% hip_time = [0 25 30 60 95 100];
+% hip_position = [15 0 0 -10 15 15];
+% hip_velocity = [0 0 0 0 0 0];
+% hip_param = [];
+
+% left leg knee
+knee_time = [0 60 75 80 95 100];
+knee_position = [0 0 50 50 0 0];
+knee_velocity = [0 0 0 0 0 0];
+knee_param = [];
+
+% knee_time = [0 60 75 80 95 100];
+% knee_position = [0 0 40 40 0 0];
+% knee_velocity = [0 0 0 0 0 0];
+% knee_param = [];
+
+% left leg ankle
+ankle_time = [0 70 75 85 95 100];
+ankle_position = [0 0 20 20 0 0];
+ankle_velocity = [0 0 0 0 0 0];
+ankle_param = [];
+
+% calculate the parameters
+for i = 1 : 1 : length(hip_time)
+    if i < length(hip_time)
+        j = i + 1;
+    else
+        j = i - length(hip_time) + 1;
+    end
+    time_trans = hip_time(j) - hip_time(i);
+    hip_param = [
+        hip_param ...
+        [
+            hip_position(i) 
+            hip_velocity(i) 
+            3 / time_trans^2 * (hip_position(j) - hip_position(i)) - 2 / time_trans^1 * hip_velocity(i) - 1 / time_trans^1 * hip_velocity(j)
+            -2 / time_trans^3 * (hip_position(j) - hip_position(i)) + 1 / time_trans^2 * (hip_velocity(i) + hip_velocity(j))
+        ]];
+end
+
+for i = 1 : 1 : length(knee_time)
+    if i < length(knee_time)
+        j = i + 1;
+    else
+        j = i - length(knee_time) + 1;
+    end
+    time_trans = knee_time(j) - knee_time(i);
+    knee_param = [
+        knee_param ...
+        [
+            knee_position(i) 
+            knee_velocity(i) 
+            3 / time_trans^2 * (knee_position(j) - knee_position(i)) - 2 / time_trans^1 * knee_velocity(i) - 1 / time_trans^1 * knee_velocity(j)
+            -2 / time_trans^3 * (knee_position(j) - knee_position(i)) + 1 / time_trans^2 * (knee_velocity(i) + knee_velocity(j))
+        ]];
+end
+
+for i = 1 : 1 : length(ankle_time)
+    if i < length(ankle_time)
+        j = i + 1;
+    else
+        j = i - length(ankle_time) + 1;
+    end
+    time_trans = ankle_time(j) - ankle_time(i);
+    ankle_param = [
+        ankle_param ...
+        [
+            ankle_position(i) 
+            ankle_velocity(i) 
+            3 / time_trans^2 * (ankle_position(j) - ankle_position(i)) - 2 / time_trans^1 * ankle_velocity(i) - 1 / time_trans^1 * ankle_velocity(j)
+            -2 / time_trans^3 * (ankle_position(j) - ankle_position(i)) + 1 / time_trans^2 * (ankle_velocity(i) + ankle_velocity(j))
+        ]];
+end
+
+%% Webots Varialbes Setup
+
+TIME_STEP = 10;
+
+% get and enable devices, e.g.:
+%  camera = wb_robot_get_device('camera');
+%  wb_camera_enable(camera, TIME_STEP);
+robot = wb_supervisor_node_get_from_def('ExoMotus-H4-6Joint');
+
+left_leg_hip_motor = wb_robot_get_device('left_leg_hip_motor');
+left_leg_knee_motor = wb_robot_get_device('left_leg_knee_motor');
+left_leg_ankle_motor = wb_robot_get_device('left_leg_ankle_motor');
+right_leg_hip_motor = wb_robot_get_device('right_leg_hip_motor');
+right_leg_knee_motor = wb_robot_get_device('right_leg_knee_motor');
+right_leg_ankle_motor = wb_robot_get_device('right_leg_ankle_motor');
+
+period = 100;
+time = 0;
+time_step = TIME_STEP * 0.1;
+time_buffer = [];
+
+left_leg_hip_joint_command_position = 0;
+left_leg_knee_joint_command_position = 0;
+left_leg_ankle_joint_command_position = 0;
+right_leg_hip_joint_command_position = 0;
+right_leg_knee_joint_command_position = 0;
+right_leg_ankle_joint_command_position = 0;
+
+left_leg_hip_joint_actual_position = 0;
+left_leg_knee_joint_actual_position = 0;
+left_leg_ankle_joint_actual_position = 0;
+right_leg_hip_joint_actual_position = 0;
+right_leg_knee_joint_actual_position = 0;
+right_leg_ankle_joint_actual_position = 0;
+
+left_leg_hip_joint_actual_velocity = 0;
+left_leg_knee_joint_actual_velocity = 0;
+left_leg_ankle_joint_actual_velocity = 0;
+right_leg_hip_joint_actual_velocity = 0;
+right_leg_knee_joint_actual_velocity = 0;
+right_leg_ankle_joint_actual_velocity = 0;
+
+left_leg_hip_joint_command_position_buffer = [];
+left_leg_knee_joint_command_position_buffer = [];
+left_leg_ankle_joint_command_position_buffer = [];
+right_leg_hip_joint_command_position_buffer = [];
+right_leg_knee_joint_command_position_buffer = [];
+right_leg_ankle_joint_command_position_buffer = [];
+
+left_leg_hip_joint_actual_position_buffer = [];
+left_leg_knee_joint_actual_position_buffer = [];
+left_leg_ankle_joint_actual_position_buffer = [];
+right_leg_hip_joint_actual_position_buffer = [];
+right_leg_knee_joint_actual_position_buffer = [];
+right_leg_ankle_joint_actual_position_buffer = [];
+
+left_leg_hip_joint_actual_velocity_buffer = [];
+left_leg_knee_joint_actual_velocity_buffer = [];
+left_leg_ankle_joint_actual_velocity_buffer = [];
+right_leg_hip_joint_actual_velocity_buffer = [];
+right_leg_knee_joint_actual_velocity_buffer = [];
+right_leg_ankle_joint_actual_velocity_buffer = [];
+
+fig = figure();
+
+%% Simulation Main Loop
+% perform simulation steps of TIME_STEP milliseconds
+% and leave the loop when Webots signals the termination
+%
+while wb_robot_step(TIME_STEP) ~= -1
+    
+    % set timer
+    time = time + time_step;
+    
+    % read the sensors, e.g.:
+    %  rgb = wb_camera_get_image(camera);
+    balance = wb_supervisor_node_get_static_balance(robot);
+    center_of_mass = wb_supervisor_node_get_center_of_mass(robot);
+%     
+%     number_of_contacts = wb_supervisor_node_get_number_of_contact_points(robot)
+%     for i = 0 : 1 : number_of_contacts
+%         contact_point = wb_supervisor_node_get_contact_point(node, index)
+%     end
+
+    left_leg_hip_joint_actual_position = wb_motor_get_target_position(left_leg_hip_motor);
+    left_leg_knee_joint_actual_position = wb_motor_get_target_position(left_leg_knee_motor);
+    left_leg_ankle_joint_actual_position = wb_motor_get_target_position(left_leg_ankle_motor);
+    right_leg_hip_joint_actual_position = wb_motor_get_target_position(right_leg_hip_motor);
+    right_leg_knee_joint_actual_position = wb_motor_get_target_position(right_leg_knee_motor);
+    right_leg_ankle_joint_actual_position = wb_motor_get_target_position(right_leg_ankle_motor);
+    
+    left_leg_hip_joint_actual_velocity = wb_motor_get_velocity(left_leg_hip_motor);
+    left_leg_knee_joint_actual_velocity = wb_motor_get_velocity(left_leg_knee_motor);
+    left_leg_ankle_joint_actual_velocity = wb_motor_get_velocity(left_leg_ankle_motor);
+    right_leg_hip_joint_actual_velocity = wb_motor_get_velocity(right_leg_hip_motor);
+    right_leg_knee_joint_actual_velocity = wb_motor_get_velocity(right_leg_knee_motor);
+    right_leg_ankle_joint_actual_velocity = wb_motor_get_velocity(right_leg_ankle_motor);
+    
+    % Process here sensor data, images, etc.
+    
+    % do the algorithm
+    run_time_ll = time;
+    if run_time_ll < 50
+        run_time_rl = run_time_ll + 50;
+    else
+        run_time_rl = run_time_ll + 50 - 100;
+    end
+    % get the result
+    % llh
+    for i = 1 : 1 : length(hip_time)
+        if i < length(hip_time)
+            j = i + 1;
+        else
+            j = i - length(hip_time) + 1;
+        end
+        if run_time_ll >= hip_time(i) && run_time_ll < hip_time(j)
+            t_plan = run_time_ll - hip_time(i);
+            llh_position = hip_param(1,i) * t_plan^0 + hip_param(2,i) * t_plan^1 + hip_param(3,i) * t_plan^2 + hip_param(4,i) * t_plan^3;
+            break;
+        end
+    end
+    % llk
+    for i = 1 : 1 : length(knee_time)
+        if i < length(knee_time)
+            j = i + 1;
+        else
+            j = i - length(knee_time) + 1;
+        end
+        if run_time_ll >= knee_time(i) && run_time_ll < knee_time(j)
+            t_plan = run_time_ll - knee_time(i);
+            llk_position = knee_param(1,i) * t_plan^0 + knee_param(2,i) * t_plan^1 + knee_param(3,i) * t_plan^2 + knee_param(4,i) * t_plan^3;
+            break;
+        end
+    end
+    % lla
+    for i = 1 : 1 : length(ankle_time)
+        if i < length(ankle_time)
+            j = i + 1;
+        else
+            j = i - length(ankle_time) + 1;
+        end
+        if run_time_ll >= ankle_time(i) && run_time_ll < ankle_time(j)
+            t_plan = run_time_ll - ankle_time(i);
+            lla_position = ankle_param(1,i) * t_plan^0 + ankle_param(2,i) * t_plan^1 + ankle_param(3,i) * t_plan^2 + ankle_param(4,i) * t_plan^3;
+            break;
+        end
+    end
+    % rlh
+    for i = 1 : 1 : length(hip_time)
+        if i < length(hip_time)
+            j = i + 1;
+        else
+            j = i - length(hip_time) + 1;
+        end
+        if run_time_rl >= hip_time(i) && run_time_rl < hip_time(j)
+            t_plan = run_time_rl - hip_time(i);
+            rlh_position = hip_param(1,i) * t_plan^0 + hip_param(2,i) * t_plan^1 + hip_param(3,i) * t_plan^2 + hip_param(4,i) * t_plan^3;
+            break;
+        end
+    end
+    % rlk
+    for i = 1 : 1 : length(knee_time)
+        if i < length(knee_time)
+            j = i + 1;
+        else
+            j = i - length(knee_time) + 1;
+        end
+        if run_time_rl >= knee_time(i) && run_time_rl < knee_time(j)
+            t_plan = run_time_rl - knee_time(i);
+            rlk_position = knee_param(1,i) * t_plan^0 + knee_param(2,i) * t_plan^1 + knee_param(3,i) * t_plan^2 + knee_param(4,i) * t_plan^3;
+            break;
+        end
+    end
+    % rla
+    for i = 1 : 1 : length(ankle_time)
+        if i < length(ankle_time)
+            j = i + 1;
+        else
+            j = i - length(ankle_time) + 1;
+        end
+        if run_time_rl >= ankle_time(i) && run_time_rl < ankle_time(j)
+            t_plan = run_time_rl - ankle_time(i);
+            rla_position = ankle_param(1,i) * t_plan^0 + ankle_param(2,i) * t_plan^1 + ankle_param(3,i) * t_plan^2 + ankle_param(4,i) * t_plan^3;
+            break;
+        end
+    end
+    
+    left_leg_hip_joint_command_position = llh_position / 180 * pi;
+    left_leg_knee_joint_command_position = llk_position / 180 * pi;
+    left_leg_ankle_joint_command_position = lla_position / 180 * pi;
+    right_leg_hip_joint_command_position = rlh_position / 180 * pi;
+    right_leg_knee_joint_command_position = rlk_position / 180 * pi;
+    right_leg_ankle_joint_command_position = rla_position / 180 * pi;
+    
+    % send actuator commands, e.g.:
+    wb_motor_set_position(left_leg_hip_motor, left_leg_hip_joint_command_position);
+    wb_motor_set_position(left_leg_knee_motor, left_leg_knee_joint_command_position);
+    wb_motor_set_position(left_leg_ankle_motor, left_leg_ankle_joint_command_position);
+    wb_motor_set_position(right_leg_hip_motor, right_leg_hip_joint_command_position);
+    wb_motor_set_position(right_leg_knee_motor, right_leg_knee_joint_command_position);
+    wb_motor_set_position(right_leg_ankle_motor, right_leg_ankle_joint_command_position);
+    
+    % record time
+    if time > period
+        
+       %% if your code plots some graphics, it needs to flushed like this:
+        clf(fig);
+        
+        subplot(3,1,1);
+        hold on;
+        plot(time_buffer, left_leg_hip_joint_command_position_buffer);
+        plot(time_buffer, left_leg_knee_joint_command_position_buffer);
+        plot(time_buffer, left_leg_ankle_joint_command_position_buffer);
+        title('trajectory (command position)');
+        hold off;
+        
+        subplot(3,1,2);
+        hold on;
+        plot(time_buffer, left_leg_hip_joint_actual_position_buffer);
+        plot(time_buffer, left_leg_knee_joint_actual_position_buffer);
+        plot(time_buffer, left_leg_ankle_joint_actual_position_buffer);
+        title('trajectory (actual position)');
+        hold off;
+        
+        subplot(3,1,3);
+        hold on;
+        plot(time_buffer, left_leg_hip_joint_actual_velocity_buffer);
+        plot(time_buffer, left_leg_knee_joint_actual_velocity_buffer);
+        plot(time_buffer, left_leg_ankle_joint_actual_velocity_buffer);
+        title('trajectory (actual velocity)');
+        hold off;
+        
+        % flush graphics
+        drawnow;
+        
+        % clear buffer
+        time = time - period;
+        time_buffer = [];
+        left_leg_knee_joint_time_buffer = [];
+        left_leg_hip_joint_command_position_buffer = [];
+        left_leg_knee_joint_command_position_buffer = [];
+        left_leg_ankle_joint_command_position_buffer = [];
+        right_leg_hip_joint_command_position_buffer = [];
+        right_leg_knee_joint_command_position_buffer = [];
+        right_leg_ankle_joint_command_position_buffer = [];
+        left_leg_hip_joint_actual_position_buffer = [];
+        left_leg_knee_joint_actual_position_buffer = [];
+        left_leg_ankle_joint_actual_position_buffer = [];
+        right_leg_hip_joint_actual_position_buffer = [];
+        right_leg_knee_joint_actual_position_buffer = [];
+        right_leg_ankle_joint_actual_position_buffer = [];
+        left_leg_hip_joint_actual_velocity_buffer = [];
+        left_leg_knee_joint_actual_velocity_buffer = [];
+        left_leg_ankle_joint_actual_velocity_buffer = [];
+        right_leg_hip_joint_actual_velocity_buffer = [];
+        right_leg_knee_joint_actual_velocity_buffer = [];
+        right_leg_ankle_joint_actual_velocity_buffer = [];
+    else
+        time_buffer = [time_buffer, time];
+        left_leg_hip_joint_command_position_buffer = [left_leg_hip_joint_command_position_buffer, left_leg_hip_joint_command_position];
+        left_leg_knee_joint_command_position_buffer = [left_leg_knee_joint_command_position_buffer, left_leg_knee_joint_command_position];
+        left_leg_ankle_joint_command_position_buffer = [left_leg_ankle_joint_command_position_buffer, left_leg_ankle_joint_command_position];
+        right_leg_hip_joint_command_position_buffer = [right_leg_hip_joint_command_position_buffer, right_leg_hip_joint_command_position];
+        right_leg_knee_joint_command_position_buffer = [right_leg_knee_joint_command_position_buffer, right_leg_knee_joint_command_position];
+        right_leg_ankle_joint_command_position_buffer = [right_leg_ankle_joint_command_position_buffer, right_leg_ankle_joint_command_position];
+        left_leg_hip_joint_actual_position_buffer = [left_leg_hip_joint_actual_position_buffer, left_leg_hip_joint_actual_position];
+        left_leg_knee_joint_actual_position_buffer = [left_leg_knee_joint_actual_position_buffer, left_leg_knee_joint_actual_position];
+        left_leg_ankle_joint_actual_position_buffer = [left_leg_ankle_joint_actual_position_buffer, left_leg_ankle_joint_actual_position];
+        right_leg_hip_joint_actual_position_buffer = [right_leg_hip_joint_actual_position_buffer, right_leg_hip_joint_actual_position];
+        right_leg_knee_joint_actual_position_buffer = [right_leg_knee_joint_actual_position_buffer, right_leg_knee_joint_actual_position];
+        right_leg_ankle_joint_actual_position_buffer = [right_leg_ankle_joint_actual_position_buffer, right_leg_ankle_joint_actual_position];
+        left_leg_hip_joint_actual_velocity_buffer = [left_leg_hip_joint_actual_velocity_buffer, left_leg_hip_joint_actual_velocity];
+        left_leg_knee_joint_actual_velocity_buffer = [left_leg_knee_joint_actual_velocity_buffer, left_leg_knee_joint_actual_velocity];
+        left_leg_ankle_joint_actual_velocity_buffer = [left_leg_ankle_joint_actual_velocity_buffer, left_leg_ankle_joint_actual_velocity];
+        right_leg_hip_joint_actual_velocity_buffer = [right_leg_hip_joint_actual_velocity_buffer, right_leg_hip_joint_actual_velocity];
+        right_leg_knee_joint_actual_velocity_buffer = [right_leg_knee_joint_actual_velocity_buffer, right_leg_knee_joint_actual_velocity];
+        right_leg_ankle_joint_actual_velocity_buffer = [right_leg_ankle_joint_actual_velocity_buffer, right_leg_ankle_joint_actual_velocity];
+    end
+    
+end
+
+% cleanup code goes here: write data to files, etc.
+clear;
+clc;

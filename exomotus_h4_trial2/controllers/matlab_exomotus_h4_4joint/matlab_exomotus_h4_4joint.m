@@ -10,6 +10,62 @@
 desktop;
 keyboard;
 
+%% Trajectory Generation
+
+% set proportion
+cycle_time = 100;
+step_time = 100;
+shift_time = 10;
+
+% left leg hip
+hip_time = [0 25 30 60 95 100];
+hip_position = [15 0 0 -10 15 15];
+hip_velocity = [0 0 0 0 0 0];
+hip_param = [];
+
+% left leg knee
+knee_time = [0 60 75 80 95 100];
+knee_position = [2 2 30 30 2 2];
+knee_velocity = [0 0 0 0 0 0];
+knee_param = [];
+
+% calculate the parameters
+for i = 1 : 1 : length(hip_time)
+    if i < length(hip_time)
+        j = i + 1;
+    else
+        j = i - length(hip_time) + 1;
+    end
+    time_trans = hip_time(j) - hip_time(i);
+    hip_param = [
+        hip_param ...
+        [
+            hip_position(i) 
+            hip_velocity(i) 
+            3 / time_trans^2 * (hip_position(j) - hip_position(i)) - 2 / time_trans^1 * hip_velocity(i) - 1 / time_trans^1 * hip_velocity(j)
+            -2 / time_trans^3 * (hip_position(j) - hip_position(i)) + 1 / time_trans^2 * (hip_velocity(i) + hip_velocity(j))
+        ]];
+end
+
+for i = 1 : 1 : length(knee_time)
+    if i < length(knee_time)
+        j = i + 1;
+    else
+        j = i - length(knee_time) + 1;
+    end
+    time_trans = knee_time(j) - knee_time(i);
+    knee_param = [
+        knee_param ...
+        [
+            knee_position(i) 
+            knee_velocity(i) 
+            3 / time_trans^2 * (knee_position(j) - knee_position(i)) - 2 / time_trans^1 * knee_velocity(i) - 1 / time_trans^1 * knee_velocity(j)
+            -2 / time_trans^3 * (knee_position(j) - knee_position(i)) + 1 / time_trans^2 * (knee_velocity(i) + knee_velocity(j))
+        ]];
+end
+
+%% Webots Varialbes Setup
+
 TIME_STEP = 10;
 
 % get and enable devices, e.g.:
@@ -22,9 +78,9 @@ left_leg_knee_motor = wb_robot_get_device('left_leg_knee_motor');
 right_leg_hip_motor = wb_robot_get_device('right_leg_hip_motor');
 right_leg_knee_motor = wb_robot_get_device('right_leg_knee_motor');
 
-period = 1;
+period = 100;
 time = 0;
-time_step = TIME_STEP * 0.001;
+time_step = TIME_STEP * 0.1;
 time_buffer = [];
 
 left_leg_hip_joint_command_position = 0;
@@ -59,11 +115,14 @@ right_leg_knee_joint_actual_velocity_buffer = [];
 
 fig = figure();
 
-% main loop:
+%% Simulation Main Loop
 % perform simulation steps of TIME_STEP milliseconds
 % and leave the loop when Webots signals the termination
 %
 while wb_robot_step(TIME_STEP) ~= -1
+    
+    % set timer
+    time = time + time_step;
     
     % read the sensors, e.g.:
     %  rgb = wb_camera_get_image(camera);
@@ -87,11 +146,71 @@ while wb_robot_step(TIME_STEP) ~= -1
     
     % Process here sensor data, images, etc.
     
-    %% do the algorithm
-    left_leg_hip_joint_command_position = 20 * sin(time * 2 * pi / period) / 180 * pi;
-    left_leg_knee_joint_command_position = 0 / 180 * pi;
-    right_leg_hip_joint_command_position = 20 * sin((time * 2 * pi + pi) / period) / 180 * pi;
-    right_leg_knee_joint_command_position = 0 / 180 * pi;
+    % do the algorithm
+    run_time_ll = time;
+    if run_time_ll < 50
+        run_time_rl = run_time_ll + 50;
+    else
+        run_time_rl = run_time_ll + 50 - 100;
+    end
+    % get the result
+    % llh
+    for i = 1 : 1 : length(hip_time)
+        if i < length(hip_time)
+            j = i + 1;
+        else
+            j = i - length(hip_time) + 1;
+        end
+        if run_time_ll >= hip_time(i) && run_time_ll < hip_time(j)
+            t_plan = run_time_ll - hip_time(i);
+            llh_position = hip_param(1,i) * t_plan^0 + hip_param(2,i) * t_plan^1 + hip_param(3,i) * t_plan^2 + hip_param(4,i) * t_plan^3;
+            break;
+        end
+    end
+    % llk
+    for i = 1 : 1 : length(knee_time)
+        if i < length(knee_time)
+            j = i + 1;
+        else
+            j = i - length(knee_time) + 1;
+        end
+        if run_time_ll >= knee_time(i) && run_time_ll < knee_time(j)
+            t_plan = run_time_ll - knee_time(i);
+            llk_position = knee_param(1,i) * t_plan^0 + knee_param(2,i) * t_plan^1 + knee_param(3,i) * t_plan^2 + knee_param(4,i) * t_plan^3;
+            break;
+        end
+    end
+    % rlh
+    for i = 1 : 1 : length(hip_time)
+        if i < length(hip_time)
+            j = i + 1;
+        else
+            j = i - length(hip_time) + 1;
+        end
+        if run_time_rl >= hip_time(i) && run_time_rl < hip_time(j)
+            t_plan = run_time_rl - hip_time(i);
+            rlh_position = hip_param(1,i) * t_plan^0 + hip_param(2,i) * t_plan^1 + hip_param(3,i) * t_plan^2 + hip_param(4,i) * t_plan^3;
+            break;
+        end
+    end
+    % rlk
+    for i = 1 : 1 : length(knee_time)
+        if i < length(knee_time)
+            j = i + 1;
+        else
+            j = i - length(knee_time) + 1;
+        end
+        if run_time_rl >= knee_time(i) && run_time_rl < knee_time(j)
+            t_plan = run_time_rl - knee_time(i);
+            rlk_position = knee_param(1,i) * t_plan^0 + knee_param(2,i) * t_plan^1 + knee_param(3,i) * t_plan^2 + knee_param(4,i) * t_plan^3;
+            break;
+        end
+    end
+    
+    left_leg_hip_joint_command_position = llh_position / 180 * pi;
+    left_leg_knee_joint_command_position = llk_position / 180 * pi;
+    right_leg_hip_joint_command_position = rlh_position / 180 * pi;
+    right_leg_knee_joint_command_position = rlk_position / 180 * pi;
     
     % send actuator commands, e.g.:
     wb_motor_set_position(left_leg_hip_motor, left_leg_hip_joint_command_position);
@@ -99,8 +218,7 @@ while wb_robot_step(TIME_STEP) ~= -1
     wb_motor_set_position(right_leg_hip_motor, right_leg_hip_joint_command_position);
     wb_motor_set_position(right_leg_knee_motor, right_leg_knee_joint_command_position);
     
-    %% record time
-    time = time + time_step;
+    % record time
     if time > period
         
        %% if your code plots some graphics, it needs to flushed like this:
